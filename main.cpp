@@ -6,6 +6,8 @@
 #include <GL/glut.h>
 
 #define pi (2*acos(0.0))
+#include <iostream>
+using namespace std;
 
 double cameraHeight;
 double cameraAngle;
@@ -13,11 +15,13 @@ int drawgrid;
 int drawaxes;
 double angle;
 
+
 struct point
 {
 	double x,y,z;
 };
-
+point bubbles[5];
+point speed[5];
 
 void drawAxes()
 {
@@ -95,7 +99,6 @@ void drawSquare(double a)
 	}glEnd();
 }
 
-
 void drawCircle(double radius,int segments)
 {
     int i;
@@ -118,19 +121,20 @@ void drawCircle(double radius,int segments)
         glEnd();
     }
 }
-void drawBubble(double radius,int segments)
+
+void drawBubble(double x, double y, double radius)
 {
     int i;
     struct point points[100];
     //glColor3f(0.7,0.7,0.7);
     //generate points
-    for(i=0;i<=segments;i++)
+    for(i=0;i<=36;i++)
     {
-        points[i].x= -100 + radius*cos(((double)i/(double)segments)*2*pi);
-        points[i].y= -100 + radius*sin(((double)i/(double)segments)*2*pi);
+        points[i].x = x + radius*cos(((double)i/36)*2*pi);
+        points[i].y = y + radius*sin(((double)i/36)*2*pi);
     }
     //draw segments using generated points
-    for(i=0;i<segments;i++)
+    for(i=0;i<36;i++)
     {
         glBegin(GL_LINES);
         {
@@ -139,6 +143,33 @@ void drawBubble(double radius,int segments)
         }
         glEnd();
     }
+}
+void drawBubbles()
+{
+    for (int i = 0; i < 5; i++)
+    {
+        bubbles[i].x = bubbles[i].x + speed[i].x;
+        bubbles[i].y = bubbles[i].y + speed[i].y;
+        drawBubble(bubbles[i].x, bubbles[i].y, 15);
+    }
+}
+void newDraw()
+{
+    glRotatef(angle, 0, 0, 1);
+    glTranslatef(85, 0, 0);
+    //glTranslatef(20, 0, 0);
+
+    drawSquare(10);
+    glColor3f(1,1,1);
+    glRotatef(angle, 0,0,1);
+    drawSquare(5);
+    glPushMatrix();
+    {
+        glRotatef(60, 0, 0, 0);
+        drawSquare(40);
+    }
+    glPopMatrix();
+    drawSquare(5);
 }
 
 void drawCone(double radius,double height,int segments)
@@ -345,7 +376,7 @@ void display(){
 	****************************/
 	//add objects
 
-	//drawAxes();
+	drawAxes();
 	//drawGrid();
 
 	//drawLine();
@@ -356,24 +387,36 @@ void display(){
 
     glColor3f(1,0,0);
     drawCircle(85, 36);
-    drawBubble(20, 36);
+    //drawBubble(15, 36);
+    drawBubbles();
+
+    newDraw();
 
     //drawCone(20,50,24);
 
 	//drawSphere(30,24,20);
 
 
-
-
 	//ADD this line in the end --- if you use double buffer (i.e. GL_DOUBLE)
 	glutSwapBuffers();
 }
 
+void speedController()
+{
+    for (int i = 0; i < 5; i++)
+    {
+        speed[i].x = (i+1)*0.01;
+        speed[i].y = (i+1)*0.01;
+    }
+}
 
 void animate(){
-	angle+=0.05;
+	angle+=0.02;
 	//codes for any changes in Models, Camera
 	glutPostRedisplay();
+	speedController();
+
+
 }
 
 void init(){
@@ -383,6 +426,17 @@ void init(){
 	cameraHeight=150.0;
 	cameraAngle=1.0;
 	angle=0;
+
+	for(int i=0; i<5; i++)
+    {
+        bubbles[i].x = -105;
+        bubbles[i].y = -105;
+        bubbles[i].z = 0;
+
+        speed[i].x = 0;
+        speed[i].y = 0;
+        speed[i].z = 0;
+    }
 
 	//clear the screen
 	glClearColor(0,0,0,0);
@@ -410,7 +464,7 @@ int main(int argc, char **argv){
 	glutInitWindowPosition(0, 0);
 	glutInitDisplayMode(GLUT_DEPTH | GLUT_DOUBLE | GLUT_RGB);	//Depth, Double buffer, RGB color
 
-	glutCreateWindow("My OpenGL Program");
+	glutCreateWindow("Task 2");
 
 	init();
 
