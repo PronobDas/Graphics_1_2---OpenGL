@@ -14,7 +14,8 @@ double cameraAngle;
 int drawgrid;
 int drawaxes;
 double angle;
-
+double sf;
+double oldSF;
 
 struct point
 {
@@ -22,6 +23,16 @@ struct point
 };
 point bubbles[5];
 point speed[5];
+
+int counter;
+
+double distance2d(point p1, point p2)
+{
+    double dist;
+    dist = sqrt(pow(p1.x-p2.x, 2) + pow(p1.y-p2.y, 2));
+    return dist;
+}
+
 
 void drawAxes()
 {
@@ -66,6 +77,7 @@ void drawGrid()
 	}
 }
 
+
 void drawLine()
 {
     glBegin(GL_LINES);{
@@ -73,6 +85,7 @@ void drawLine()
         glVertex3f(20,10,0);
     }glEnd();
 }
+
 
 void drawSquare(double a)
 {
@@ -99,6 +112,7 @@ void drawSquare(double a)
 	}glEnd();
 }
 
+
 void drawCircle(double radius,int segments)
 {
     int i;
@@ -122,6 +136,7 @@ void drawCircle(double radius,int segments)
     }
 }
 
+
 void drawBubble(double x, double y, double radius)
 {
     int i;
@@ -144,15 +159,18 @@ void drawBubble(double x, double y, double radius)
         glEnd();
     }
 }
+
+
 void drawBubbles()
 {
     for (int i = 0; i < 5; i++)
     {
-        bubbles[i].x = bubbles[i].x + speed[i].x;
-        bubbles[i].y = bubbles[i].y + speed[i].y;
-        drawBubble(bubbles[i].x, bubbles[i].y, 15);
+        if (counter >= i*500 )
+            drawBubble(bubbles[i].x, bubbles[i].y, 15);
     }
 }
+
+
 void newDraw()
 {
     glRotatef(angle, 0, 0, 1);
@@ -171,6 +189,7 @@ void newDraw()
     glPopMatrix();
     drawSquare(5);
 }
+
 
 void drawCone(double radius,double height,int segments)
 {
@@ -270,12 +289,23 @@ void drawSS()
     drawSquare(5);
 }
 
+
 void keyboardListener(unsigned char key, int x,int y){
 	switch(key){
 
 		case '1':
 			drawgrid=1-drawgrid;
 			break;
+        case 'p':
+            if (sf > 0)
+            {
+                oldSF = sf;
+                sf = 0;
+            }
+            else
+            {
+                sf = oldSF;
+            }
 
 		default:
 			break;
@@ -287,9 +317,13 @@ void specialKeyListener(int key, int x,int y){
 	switch(key){
 		case GLUT_KEY_DOWN:		//down arrow key
 			cameraHeight -= 3.0;
+			if(sf > 1)
+                sf -= 0.1;
 			break;
 		case GLUT_KEY_UP:		// up arrow key
 			cameraHeight += 3.0;
+			if(sf <= 9.9)
+                sf += 0.1;
 			break;
 
 		case GLUT_KEY_RIGHT:
@@ -340,7 +374,6 @@ void mouseListener(int button, int state, int x, int y){	//x, y is the x-y of th
 }
 
 
-
 void display(){
 
 	//clear the display
@@ -376,7 +409,7 @@ void display(){
 	****************************/
 	//add objects
 
-	drawAxes();
+	//drawAxes();
 	//drawGrid();
 
 	//drawLine();
@@ -390,7 +423,7 @@ void display(){
     //drawBubble(15, 36);
     drawBubbles();
 
-    newDraw();
+    //newDraw();
 
     //drawCone(20,50,24);
 
@@ -405,18 +438,41 @@ void speedController()
 {
     for (int i = 0; i < 5; i++)
     {
-        speed[i].x = (i+1)*0.01;
-        speed[i].y = (i+1)*0.01;
+        if (counter > i*500)
+        {
+            //if ()
+
+            if (bubbles[i].y >= 120-15)
+            {
+                speed[i].y *= -1;
+            }
+            else if (bubbles[i].y < -120+15 )
+            {
+                speed[i].y *= -1;
+            }
+            if (bubbles[i].x >= 120-15)
+            {
+                speed[i].x *= -1;
+            }
+            else if (bubbles[i].x < -120+15 )
+            {
+                speed[i].x *= -1;
+            }
+
+            bubbles[i].x = bubbles[i].x + sf*speed[i].x;
+            bubbles[i].y = bubbles[i].y + sf*speed[i].y;
+
+        }
+
     }
 }
 
 void animate(){
+    counter++;
 	angle+=0.02;
 	//codes for any changes in Models, Camera
 	glutPostRedisplay();
 	speedController();
-
-
 }
 
 void init(){
@@ -426,17 +482,26 @@ void init(){
 	cameraHeight=150.0;
 	cameraAngle=1.0;
 	angle=0;
+	counter = 0;
+	sf = 1;
 
 	for(int i=0; i<5; i++)
     {
         bubbles[i].x = -105;
         bubbles[i].y = -105;
         bubbles[i].z = 0;
+        //(double) rand()/(100*RAND_MAX);
+        //(double) rand()/(100*RAND_MAX);
+        speed[i].x = (double) rand()/(100*RAND_MAX);
+        speed[i].y = sqrt(0.0005 - speed[i].x*speed[i].x);
 
-        speed[i].x = 0;
-        speed[i].y = 0;
+
         speed[i].z = 0;
     }
+    //speed[0].x = 0.01;
+    //speed[0].y = 0.01;
+
+
 
 	//clear the screen
 	glClearColor(0,0,0,0);
