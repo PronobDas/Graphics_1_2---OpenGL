@@ -16,6 +16,7 @@ int drawaxes;
 double angle;
 double sf;
 double oldSF;
+int flag[5];
 
 struct point
 {
@@ -416,8 +417,6 @@ void display(){
     glColor3f(0,1,0);
     drawSquare(120);
 
-    //drawSS();
-
     glColor3f(1,0,0);
     drawCircle(85, 36);
     //drawBubble(15, 36);
@@ -440,7 +439,18 @@ void speedController()
     {
         if (counter > i*500)
         {
-            //if ()
+            point o = {0,0,0};
+            if ( distance2d(bubbles[i], o) <= 85-15)
+                flag[i] = 1;
+
+            if (flag[i] == 1 && distance2d(bubbles[i], o) >= 85-15)
+            {
+                //rules of reflexion
+                //bubbles[i].x = 0;
+                //bubbles[i].y = 0;
+                speed[i].x *= -1;
+                speed[i].y *= -1;
+            }
 
             if (bubbles[i].y >= 120-15)
             {
@@ -497,6 +507,7 @@ void init(){
 
 
         speed[i].z = 0;
+        flag[i] = 0;
     }
     //speed[0].x = 0.01;
     //speed[0].y = 0.01;
