@@ -7,6 +7,7 @@
 
 #define pi (2*acos(0.0))
 #include <iostream>
+#include <time.h>
 using namespace std;
 
 double cameraHeight;
@@ -21,11 +22,40 @@ int flag[5];
 struct point
 {
 	double x,y,z;
+
+	point operator+(point p)
+	{
+	    return {x+p.x, y+p.y, z+p.z};
+    }
+    point operator-(point p)
+	{
+	    return {x-p.x, y-p.y, z-p.z};
+    }
+    point operator*(double n)
+	{
+	    return {x*n, y*n, z*n};
+    }
+    point operator/(double n)
+    {
+        return {x/n, y/n, z/n};
+    }
 };
 point bubbles[5];
 point speed[5];
 
 int counter;
+
+double dotMul(point a, point b)
+{
+    double result;
+    result = a.x * b.x + a.y * b.y + a.z * b.z;
+    return  result;
+}
+
+double magnitude(point p)
+{
+    return sqrt(p.x*p.x + p.y*p.y + p.z*p.z);
+}
 
 double distance2d(point p1, point p2)
 {
@@ -440,18 +470,67 @@ void speedController()
         if (counter > i*500)
         {
             point o = {0,0,0};
-            if ( distance2d(bubbles[i], o) <= 85-15)
+            if ( distance2d(bubbles[i], o) <= 85-15) // marking the bubbles that entered the circle.
                 flag[i] = 1;
 
+            //Circle - Bubble reflection
             if (flag[i] == 1 && distance2d(bubbles[i], o) >= 85-15)
             {
-                //rules of reflexion
-                //bubbles[i].x = 0;
-                //bubbles[i].y = 0;
-                speed[i].x *= -1;
-                speed[i].y *= -1;
+                point d, n, r; //
+                d.x = speed[i].x;
+                d.y = speed[i].y;
+                d.z = 0;
+
+                n.x = 0 - bubbles[i].x;
+                n.y = 0 - bubbles[i].y;
+                n.z = 0;
+
+                n = n / magnitude(n); // normalizing
+
+                double temp = dotMul(d, n);
+                if (temp < 0)
+                {
+                    r = d - n * temp * 2;
+
+                    speed[i].x = r.x;
+                    speed[i].y = r.y;
+                }
+
             }
 
+            //Bubble-Bubble reflection
+            if (flag[i] == 1)
+            {
+                for (int j = 0; j < 5; j++)
+                {
+                    if ( flag[j] == 1 && j != i && distance2d(bubbles[i], bubbles[j]) <= 30)
+                    {
+                        point dn, nn, rn; //
+                        dn.x = speed[i].x;
+                        dn.y = speed[i].y;
+                        dn.z = 0;
+
+                        nn.x = bubbles[j].x - bubbles[i].x;
+                        nn.y = bubbles[j].y - bubbles[i].y;
+                        nn.z = 0;
+
+                        nn = nn / magnitude(nn); // normalizing
+
+                        double temp = dotMul(dn, nn);
+                        if (temp > 0)
+                        {
+                            rn = dn - nn * temp * 2;
+
+                            speed[i].x = rn.x;
+                            speed[i].y = rn.y;
+                        }
+
+                    }
+                }
+            }
+
+
+            //Square - Bubble reflection
             if (bubbles[i].y >= 120-15)
             {
                 speed[i].y *= -1;
@@ -471,6 +550,7 @@ void speedController()
 
             bubbles[i].x = bubbles[i].x + sf*speed[i].x;
             bubbles[i].y = bubbles[i].y + sf*speed[i].y;
+            //cout << speed[i].x <<"  " <<speed[i].y << endl;
 
         }
 
@@ -480,9 +560,9 @@ void speedController()
 void animate(){
     counter++;
 	angle+=0.02;
+	speedController();
 	//codes for any changes in Models, Camera
 	glutPostRedisplay();
-	speedController();
 }
 
 void init(){
@@ -500,19 +580,12 @@ void init(){
         bubbles[i].x = -105;
         bubbles[i].y = -105;
         bubbles[i].z = 0;
-        //(double) rand()/(100*RAND_MAX);
-        //(double) rand()/(100*RAND_MAX);
         speed[i].x = (double) rand()/(100*RAND_MAX);
         speed[i].y = sqrt(0.0005 - speed[i].x*speed[i].x);
-
-
         speed[i].z = 0;
+
         flag[i] = 0;
     }
-    //speed[0].x = 0.01;
-    //speed[0].y = 0.01;
-
-
 
 	//clear the screen
 	glClearColor(0,0,0,0);

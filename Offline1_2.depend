@@ -1,11 +1,12 @@
 # depslib dependency file v1.0
-1616182310 source:e:\l 4 t 1\cse 409 & 410 (graphics)\offlines\offline1_2\main.cpp
+1616270793 source:e:\l 4 t 1\cse 409 & 410 (graphics)\offlines\offline1_2\main.cpp
 	<stdio.h>
 	<stdlib.h>
 	<math.h>
 	<windows.h>
 	<GL/glut.h>
 	<iostream>
+	<time.h>
 
 1512590989 c:\mingw\include\stdio.h
 	<_mingw.h>
